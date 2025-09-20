@@ -11,8 +11,7 @@ def create_app():
     data_base.init_app(app)
     
 
-
-#Player
+# Player
     @app.route('/api/players', methods=['GET'])
     def get_players():
         try:
@@ -35,12 +34,10 @@ def create_app():
     def create_player():
         try:
             data = request.get_json()
-            player = Player(
-                username=data['username']
-            )
+            player = Player(username=data['username'])
             data_base.session.add(player)
             data_base.session.commit()
-            return jsonify(player.to_dict()), 201
+            return jsonify(player.to_dict()), 200
         except Exception as e:
             data_base.session.rollback()
             return jsonify({"status": 500, "reason": str(e)}), 500
@@ -49,11 +46,9 @@ def create_app():
     def update_player(id):
         try:
             player = Player.query.get_or_404(id)
-            data = request.get_json()
-            
+            data = request.get_json() or {}
             if 'username' in data:
                 player.username = data['username']
-            
             data_base.session.commit()
             return jsonify(player.to_dict(include_games=True)), 200
         except Exception as e:
@@ -76,8 +71,7 @@ def create_app():
             return jsonify({"status": 500, "reason": str(e)}), 500
 
 
-
-#Games
+# Games
     @app.route('/api/games', methods=['GET'])
     def get_games():
         try:
@@ -100,17 +94,21 @@ def create_app():
     def create_game():
         try:
             data = request.get_json()
+            player_id = data['player_id']
+            if not Player.query.get(player_id):
+                return jsonify({"error": "Player not found"}), 404
+
             game = Game(
                 title=data['title'],
                 price=data.get('price', 0.0),
                 release_year=data.get('release_year'),
                 weight=data.get('weight'),
                 genre=data.get('genre'),
-                player_id=data['player_id']
+                player_id=player_id
             )
             data_base.session.add(game)
             data_base.session.commit()
-            return jsonify(game.to_dict()), 201
+            return jsonify(game.to_dict()), 200
         except Exception as e:
             data_base.session.rollback()
             return jsonify({"status": 500, "reason": str(e)}), 500
@@ -119,27 +117,19 @@ def create_app():
     @app.route('/api/games/<int:id>', methods=['PATCH'])
     def update_game(id):
         try:
-            data = request.get_json()
-
-            for games in game:
-                if games not in data:
-                    return jsonify({"Error" : f"field '{field}' is required"}), 400
-            if not Player.query.get(data['id']):
-                return jsonify({"Error" : "Player not found"}), 404
+            game = Game.query.get_or_404(id)
+            data = request.get_json() or {}
             
-            if 'title' in data:
-                game.title = data['title']
-            if 'price' in data:
-                game.price = data['price']
-            if 'release_year' in data:
-                game.release_year = data['release_year']
-            if 'weight' in data:
-                game.weight = data['weight']
-            if 'genre' in data:
-                game.genre = data['genre']
             if 'player_id' in data:
-                game.player_id = data['player_id']
-            
+                new_pid = data['player_id']
+                if not Player.query.get(new_pid):
+                    return jsonify({"error": "Player not found"}), 404
+                game.player_id = new_pid
+
+            for field in ['title', 'price', 'release_year', 'weight', 'genre']:
+                if field in data:
+                    setattr(game, field, data[field])
+
             data_base.session.commit()
             return jsonify(game.to_dict()), 200
         except Exception as e:
@@ -165,6 +155,7 @@ def create_app():
         data_base.create_all()
 
     return app
+
 
 app = create_app()
 
