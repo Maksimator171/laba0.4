@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 data_base = SQLAlchemy()
 
 class Player(data_base.Model):
-    tablename = "players"
+    __tablename__ = "players"
 
     id = data_base.Column(data_base.Integer, primary_key=True)
     username = data_base.Column(data_base.String(100), nullable=False, unique=True)
@@ -23,7 +23,7 @@ class Player(data_base.Model):
 
 
 class Game(data_base.Model):
-    tablename = "games"
+    __tablename__ = "games"
 
     id = data_base.Column(data_base.Integer, primary_key=True)
     title = data_base.Column(data_base.String(200), nullable=False)
