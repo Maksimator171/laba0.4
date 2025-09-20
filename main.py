@@ -119,8 +119,13 @@ def create_app():
     @app.route('/api/games/<int:id>', methods=['PATCH'])
     def update_game(id):
         try:
-            game = Game.query.get_or_404(id)
             data = request.get_json()
+
+            for games in game:
+                if games not in data:
+                    return jsonify({"Error" : f"field '{field}' is required"}), 400
+            if not Player.query.get(data['id']):
+                return jsonify({"Error" : "Player not found"}), 404
             
             if 'title' in data:
                 game.title = data['title']
