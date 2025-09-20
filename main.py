@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from models import data_base, Game, Player
+from model import data_base, Game, Player
 
 
 def create_app():
@@ -114,3 +114,53 @@ def create_app():
         except Exception as e:
             data_base.session.rollback()
             return jsonify({"status": 500, "reason": str(e)}), 500
+
+
+    @app.route('/api/games/<int:id>', methods=['PATCH'])
+    def update_game(id):
+        try:
+            game = Game.query.get_or_404(id)
+            data = request.get_json()
+            
+            if 'title' in data:
+                game.title = data['title']
+            if 'price' in data:
+                game.price = data['price']
+            if 'release_year' in data:
+                game.release_year = data['release_year']
+            if 'weight' in data:
+                game.weight = data['weight']
+            if 'genre' in data:
+                game.genre = data['genre']
+            if 'player_id' in data:
+                game.player_id = data['player_id']
+            
+            data_base.session.commit()
+            return jsonify(game.to_dict()), 200
+        except Exception as e:
+            data_base.session.rollback()
+            if "404" in str(e):
+                return jsonify({"error": "Game not found"}), 404
+            return jsonify({"status": 500, "reason": str(e)}), 500
+
+    @app.route('/api/games/<int:id>', methods=['DELETE'])
+    def delete_game(id):
+        try:
+            game = Game.query.get_or_404(id)
+            data_base.session.delete(game)
+            data_base.session.commit()
+            return '', 202
+        except Exception as e:
+            data_base.session.rollback()
+            if "404" in str(e):
+                return jsonify({"error": "Game not found"}), 404
+            return jsonify({"status": 500, "reason": str(e)}), 500
+
+    with app.app_context():
+        data_base.create_all()
+
+    return app
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=False)
