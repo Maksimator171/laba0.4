@@ -204,4 +204,4 @@ class TestGame:
                 'player_id': 999
             }
             response = client.post('/api/games', json=new_game, content_type='application/json')
-            assert response.status_code == 500
+            assert response.status_code == 404
