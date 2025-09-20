@@ -1,7 +1,7 @@
 import pytest
 import json
 from main import app, data_base
-from models import Player, Game
+from model import Player, Game
 
 def setup_database():
     with app.app_context():
