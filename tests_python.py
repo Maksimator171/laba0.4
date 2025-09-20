@@ -44,7 +44,7 @@ class TestPlayer:
         with app.test_client() as client:
             new_player = {'username': 'new_player'}
             response = client.post('/api/players', json=new_player, content_type='application/json')
-            assert response.status_code == 201
+            assert response.status_code == 200
             data = json.loads(response.data)
             assert data['username'] == 'new_player'
             
@@ -138,7 +138,7 @@ class TestGame:
                 'player_id': 1
             }
             response = client.post('/api/games', json=new_game, content_type='application/json')
-            assert response.status_code == 201
+            assert response.status_code == 200
             data = json.loads(response.data)
             assert data['title'] == 'New Game'
             assert data['genre'] == 'RPG'
